@@ -7,7 +7,6 @@ from random import choice, randint
 from pyglet import font
 from pyglet.font import Text
  
-#Bonus
 class Bonus:
   def __init__(self, id, type, color, coord):
     global grid
@@ -17,11 +16,11 @@ class Bonus:
     self.color = color
  
 class Snake:
- 
   def __init__(self, id, type, keys, color, coord):
     global grid
     self.id = id
     self.type = type
+
     if type == 'drone':
       self.min_tail = 0
       self.max_tail = 0
@@ -30,6 +29,7 @@ class Snake:
       self.min_tail = 9
       self.max_tail = 299
       self.default_tail = 29
+
     self.tail = self.default_tail
     self.x, self.y = coord
     self.new_x = self.x
@@ -224,11 +224,6 @@ def draw_header():
   glColor3f(1, 1, 1)
   header_img.blit(arena_border, arena_border + arena_border + arena_height)
 
-def draw_background():
-  global background_img, arena_border, arena_height
-  glColor3f(1, 1, 1)
-  background_img.blit(arena_border, arena_border)
-
 def draw_points():
   global snakesArray, font, points_coord
   for snake in snakesArray:
@@ -376,7 +371,6 @@ while not win.has_exit:
   glLoadIdentity()
   
   draw_header()
-  draw_background()
   draw_arena()
 
 #  if counter == 3:
