@@ -16,7 +16,6 @@ class Bonus:
     self.x, self.y = coord
     self.color = color
  
-#snake
 class Snake:
  
   def __init__(self, id, type, keys, color, coord):
