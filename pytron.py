@@ -251,7 +251,6 @@ grid_height = int(arena_height / square_size)
 win = window.Window(visible=False,width=screen_width,height=screen_height)
 win.set_visible()
 header_img = image.load('header.png').texture
-background_img = image.load('background.png').texture
 fps_limit = 12
 clock.set_fps_limit(fps_limit)
 #keyboard = key.KeyStateHandler()
