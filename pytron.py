@@ -249,8 +249,8 @@ arena_border = 10
 
 #2,3,4,5,6,8,10,12,15,16,20,24,30,40
 square_size = 10
-grid_width = arena_width / square_size 
-grid_height = arena_height / square_size
+grid_width = int(arena_width / square_size) 
+grid_height = int(arena_height / square_size)
 #8 = 90 x 60 = 5400 squares
 #10 = 72 x 48 = 3456 squares
 
