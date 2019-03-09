@@ -15,7 +15,7 @@ class Grid:
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
-        self.data = [[(0, 0)]*self.width for i in range(self.height)]
+        self.data = [[(0, 0)]*self.width for i in range(self.height)] # 0,0 is bottom left.
         self.bonus = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
 
@@ -101,7 +101,7 @@ class Snake:
         self.x, self.y = coord
         self.new_x = self.x
         self.new_y = self.y
-        self.dir = choice((0, 1, 2, 3))
+        self.dir = choice((0, 1, 2, 3)) # 0: Up // 1: Right // 2: Down // 3: Left
         self.new_dir = self.dir
         self.score = 0
         self.reset = False
@@ -131,24 +131,26 @@ class Snake:
     def select_direction(self, grid: Grid):
         """
         Chooses a new direction for a CPU snake.
+        It looks a few cells ahead, for the presence of a player, a wall or a bonus.
+        It then changes its direction based on a probability.
             :param self: 
             :param grid:Grid: Grid object to reference to when choosing the direction.
         """
         if self.type == 'drone':
             self.new_dir = choice(self.cpu_ai[self.dir])
         elif self.type == 'cpu':
-            avoid_length = choice((2, 4, 4, 8, 8, 8))
+            avoid_detection = choice((2, 4, 4, 8, 8, 8))
             avoid_x = self.x
             avoid_y = self.y
 
             if self.dir == 0:
-                avoid_y += avoid_length
+                avoid_y += avoid_detection
             elif self.dir == 1:
-                avoid_x += avoid_length
+                avoid_x += avoid_detection
             elif self.dir == 2:
-                avoid_y -= avoid_length
+                avoid_y -= avoid_detection
             elif self.dir == 3:
-                avoid_x -= avoid_length
+                avoid_x -= avoid_detection
 
             if avoid_y > grid_height - 1:
                 avoid_y -= grid_height
@@ -170,7 +172,12 @@ class Snake:
             elif state == 255:
                 self.new_dir = choice(self.cpu_avoid[self.dir])
 
-    def move(self, grid):
+    def move(self, grid: Grid):
+        """
+        Moves the snake into its new position and checks if it is outside the boundaries.
+            :param self: 
+            :param grid:Grid: Grid to reference against.
+        """   
         if self.dir == 0:
             if self.y < grid.height - 1:
                 self.new_y += 1
@@ -192,14 +199,19 @@ class Snake:
             else:
                 self.new_x = grid.width - 1
 
-    def check_collision(self, grid):
+    def check_collision(self, grid: Grid):
+        """
+        Checks if the snake if collisionning into something.
+            :param self: 
+            :param grid:Grid: Grid to reference against.
+        """
         global snakesArray
         if self.reset:
             pass
         state, age = grid.get_point(self.x, self.y) #pylint: disable=unused-variable
-        if state == 0:
+        if state == 0: # If empty
             grid.set_point(self.x, self.y, (self.id, 0))
-        elif state >= 1 and state <= 20:
+        elif state >= 1 and state <= 20: # Player
             if self.type == 'drone':
                 grid.set_point(self.x, self.y, (self.id, 0))
             else:
@@ -207,23 +219,22 @@ class Snake:
                 self.tail = self.default_tail
                 self.dead += 1
                 if state != self.id:
-                    snake = snakesArray[state - 1]
-                    snake.kill += 1
-        elif state >= 21 and state <= 40:
+                    snakesArray[state-1].kill += 1
+        elif state >= 21 and state <= 40: # Bonus
             grid.set_point(self.x, self.y, (self.id, 0))
-            if state == 21:
+            if state == 21: # Good bonus
                 if self.tail != self.max_tail:
                     self.score += 1
                     self.tail += 10
                     if self.tail > self.max_tail:
                         self.tail = self.max_tail
-            elif state == 22:
+            elif state == 22: # Mild bonus
                 if self.tail != self.min_tail:
                     self.score += 2
                     self.tail -= 5
                     if self.tail < self.min_tail:
                         self.tail = self.min_tail
-        elif state == 255:
+        elif state == 255: # Wall
             self.reset = True
             self.tail = self.default_tail
             self.dead += 1
