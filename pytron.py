@@ -8,8 +8,6 @@ from pyglet import font
 from pyglet.font import Text
 
 # Grid
-
-
 class Grid:
 
     def __init__(self, width: int, height: int):
@@ -130,7 +128,7 @@ class Snake:
             (0, 0, 0, 2)
         ]
 
-    def select_direction(self, grid: Grid):
+    def select_new_direction(self, grid: Grid):
         """
         Chooses a new direction for a CPU snake.
         It looks a few cells ahead, for the presence of a player, a wall or a bonus.
@@ -461,7 +459,7 @@ while not win.has_exit:
     for snake in snakesArray:
         snake.reset = False
     for snake in snakesArray:
-        snake.select_direction(grid)
+        snake.select_new_direction(grid)
         snake.dir = snake.new_dir
     for snake in snakesArray:
         snake.move(grid)
