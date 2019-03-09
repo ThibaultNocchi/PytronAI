@@ -1,20 +1,20 @@
 # Source code released under gpl v3 licence, see COPYING file
 
 from pyglet import window, clock, image
-from pyglet.gl import *
+from pyglet.gl import * #pylint: disable=unused-wildcard-import
 from pyglet.window import key
 from random import choice, randint
 from pyglet import font
 from pyglet.font import Text
 
 
-class Bonus:
+"""class Bonus:
     def __init__(self, id, type, color, coord):
         global grid
         self.id = id
         self.type = type
         self.x, self.y = coord
-        self.color = color
+        self.color = color"""
 
 
 class Snake:
@@ -267,8 +267,7 @@ grid_height = int(arena_height / square_size)
 # 8 = 90 x 60 = 5400 squares
 # 10 = 72 x 48 = 3456 squares
 
-win = window.Window(visible=False, width=screen_width, height=screen_height)
-win.set_visible()
+win = window.Window(width=screen_width, height=screen_height)
 header_img = image.load('header.png').texture
 fps_limit = 12
 clock.set_fps_limit(fps_limit)
