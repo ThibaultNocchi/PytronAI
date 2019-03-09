@@ -7,6 +7,41 @@ from random import choice, randint
 from pyglet import font
 from pyglet.font import Text
 
+# Grid
+class Grid:
+
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.data = [[(0, 0)]*self.width for i in range(self.height)]
+
+    def get_point(self, x, y):
+        return self.data[y][x]
+
+    def set_point(self, x, y, value):
+        self.data[y][x] = value
+
+    def reset_point(self, x, y):
+        self.data[y][x] = (0, 0)
+
+    def random_point(self):
+        bx = randint(0, self.width - 1)
+        by = randint(0, self.height - 1)
+        for y in range(self.height):
+            by = (by + y) % self.height
+            for x in range(self.width):
+                bx = (bx + x) % self.width
+                if self.data[by][bx] == (0, 0):
+                    return (bx, by)
+        return None, None
+
+    def show_bonus(self):
+        global bonus
+        b = choice(bonus)
+        if b != 0:
+            bx, by = self.random_point()
+            self.set_point(bx, by, (b, 0))
+
 class Snake:
     def __init__(self, snakeId: int, snakeType: str, keys: tuple, color: int, coord: tuple):
         """
@@ -44,7 +79,7 @@ class Snake:
         self.dead = 0
         self.kill = 0
 
-    def select_direction(self, grid):
+    def select_direction(self, grid: Grid):
         global cpu_ai, cpu_avoid
         if self.type == 'drone':
             self.new_dir = choice(cpu_ai[self.dir])
@@ -139,42 +174,6 @@ class Snake:
             self.reset = True
             self.tail = self.default_tail
             self.dead += 1
-
-
-# Grid
-class Grid:
-
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.data = [[(0, 0)]*self.width for i in range(self.height)]
-
-    def get_point(self, x, y):
-        return self.data[y][x]
-
-    def set_point(self, x, y, value):
-        self.data[y][x] = value
-
-    def reset_point(self, x, y):
-        self.data[y][x] = (0, 0)
-
-    def random_point(self):
-        bx = randint(0, self.width - 1)
-        by = randint(0, self.height - 1)
-        for y in range(self.height):
-            by = (by + y) % self.height
-            for x in range(self.width):
-                bx = (bx + x) % self.width
-                if self.data[by][bx] == (0, 0):
-                    return (bx, by)
-        return None, None
-
-    def show_bonus(self):
-        global bonus
-        b = choice(bonus)
-        if b != 0:
-            bx, by = self.random_point()
-            self.set_point(bx, by, (b, 0))
 
 
 def draw_grid():
