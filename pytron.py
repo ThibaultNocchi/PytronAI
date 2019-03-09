@@ -15,8 +15,14 @@ class Grid:
         self.height = height
         # 0,0 is bottom left.
         self.data = [[(0, 0)]*self.width for i in range(self.height)]
+        self.snakes = []
         self.bonus = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
+
+    def new_snake(self, snakeId: int, snakeType: str, keys: tuple, color: int):
+        newSnake = Snake(snakeId, snakeType, keys, color, self.random_point())
+        self.snakes.append(newSnake)
+        self.set_point(newSnake.x, newSnake.y, (newSnake.id, 0))
 
     def get_point(self, x: int, y: int) -> tuple:
         """
@@ -206,7 +212,6 @@ class Snake:
             :param self: 
             :param grid:Grid: Grid to reference against.
         """
-        global snakesArray
         if self.reset:
             pass
         state, age = grid.get_point( # pylint: disable=unused-variable
@@ -221,7 +226,7 @@ class Snake:
                 self.tail = self.default_tail
                 self.dead += 1
                 if state != self.id:
-                    snakesArray[state-1].kill += 1
+                    grid.snakes[state-1].kill += 1
         elif state >= 21 and state <= 40:  # Bonus
             grid.set_point(self.x, self.y, (self.id, 0))
             if state == 21:  # Good bonus
@@ -243,7 +248,7 @@ class Snake:
 
 
 def draw_grid():
-    global snakesArray, grid, squares_verts, colors, bonus_timeout
+    global grid, squares_verts, colors, bonus_timeout
     verts_coord = []
     verts_color = []
     for y in range(grid.height):
@@ -252,7 +257,7 @@ def draw_grid():
             color_index = 0
             fade = 1
             if state >= 1 and state <= 20:  # Snake
-                snake = snakesArray[state - 1]
+                snake = grid.snakes[state - 1]
                 if snake.reset or age > snake.tail:
                     grid.reset_point(x, y)
                 else:
@@ -307,8 +312,8 @@ def draw_header():
 
 
 def draw_points():
-    global snakesArray, font, points_coord
-    for snake in snakesArray:
+    global font, points_coord
+    for snake in grid.snakes:
         if snake.type != 'drone':
             text = "KILL %-3d, DEATH %-3d, BONUS %-3d" % (
                 snake.kill, snake.dead, snake.score)
@@ -342,8 +347,7 @@ font = font.load('Arial', 12, bold=True, italic=False)
 
 @win.event
 def on_key_press(symbol, modifiers):
-    global snakesArray
-    for snake in snakesArray:
+    for snake in grid.snakes:
         if snake.type == 'human':
             if symbol == snake.up and snake.dir != 2:
                 snake.new_dir = 0
@@ -420,7 +424,7 @@ colors = [
     (1, 0, 0)
 ]
 
-snakesArray = []
+"""snakesArray = []
 snakesArray.append(Snake(1, 'human', (key.UP, key.RIGHT,
                                       key.DOWN, key.LEFT), 1, grid.random_point()))
 snakesArray.append(
@@ -430,13 +434,16 @@ snakesArray.append(
 snakesArray.append(
     Snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4, grid.random_point()))
 snakesArray.append(Snake(5, 'drone', (0, 0, 0, 0), 8, grid.random_point()))
-snakesArray.append(Snake(6, 'drone', (0, 0, 0, 0), 8, grid.random_point()))
+snakesArray.append(Snake(6, 'drone', (0, 0, 0, 0), 8, grid.random_point()))"""
 
 #bonusArray = []
 bonus_timeout = 74
 
-for snake in snakesArray:
-    grid.set_point(snake.x, snake.y, (snake.id, 0))
+"""for snake in snakesArray:
+    grid.set_point(snake.x, snake.y, (snake.id, 0))"""
+
+grid.new_snake(1, 'human', (key.UP, key.RIGHT, key.DOWN, key.LEFT), 1)
+grid.new_snake(2, 'cpu', (key.W, key.D, key.S, key.A), 2)
 
 
 #counter = 0
@@ -456,21 +463,21 @@ while not win.has_exit:
 #    counter = 0
     grid.show_bonus()
 
-    for snake in snakesArray:
+    for snake in grid.snakes:
         snake.reset = False
-    for snake in snakesArray:
+    for snake in grid.snakes:
         snake.select_new_direction(grid)
         snake.dir = snake.new_dir
-    for snake in snakesArray:
+    for snake in grid.snakes:
         snake.move(grid)
     # check draw
-    for snake1 in snakesArray:
-        for snake2 in snakesArray:
+    for snake1 in grid.snakes:
+        for snake2 in grid.snakes:
             if snake1.id != snake2.id:
                 if snake1.new_x == snake2.new_x and snake1.new_y == snake2.new_y:
                     snake1.reset = True
                     snake2.reset = True
-    for snake in snakesArray:
+    for snake in grid.snakes:
         snake.x = snake.new_x
         snake.y = snake.new_y
         snake.check_collision(grid)
