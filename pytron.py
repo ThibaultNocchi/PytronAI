@@ -47,11 +47,11 @@ class Snake:
     def select_direction(self, grid):
         global cpu_ai, cpu_avoid
         if self.type == 'drone':
-            self.new_dir = choice(cpu_ai[snake.dir])
+            self.new_dir = choice(cpu_ai[self.dir])
         elif self.type == 'cpu':
             avoid_length = choice((2, 4, 4, 8, 8, 8))
-            avoid_x = snake.x
-            avoid_y = snake.y
+            avoid_x = self.x
+            avoid_y = self.y
 
             if self.dir == 0:
                 avoid_y += avoid_length
