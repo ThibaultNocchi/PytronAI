@@ -424,26 +424,15 @@ colors = [
     (1, 0, 0)
 ]
 
-"""snakesArray = []
-snakesArray.append(Snake(1, 'human', (key.UP, key.RIGHT,
-                                      key.DOWN, key.LEFT), 1, grid.random_point()))
-snakesArray.append(
-    Snake(2, 'cpu', (key.W, key.D, key.S, key.A), 2, grid.random_point()))
-snakesArray.append(
-    Snake(3, 'cpu', (key.R, key.G, key.F, key.D), 3, grid.random_point()))
-snakesArray.append(
-    Snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4, grid.random_point()))
-snakesArray.append(Snake(5, 'drone', (0, 0, 0, 0), 8, grid.random_point()))
-snakesArray.append(Snake(6, 'drone', (0, 0, 0, 0), 8, grid.random_point()))"""
-
 #bonusArray = []
 bonus_timeout = 74
 
-"""for snake in snakesArray:
-    grid.set_point(snake.x, snake.y, (snake.id, 0))"""
-
 grid.new_snake(1, 'human', (key.UP, key.RIGHT, key.DOWN, key.LEFT), 1)
 grid.new_snake(2, 'cpu', (key.W, key.D, key.S, key.A), 2)
+grid.new_snake(3, 'cpu', (key.R, key.G, key.F, key.D), 3)
+grid.new_snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4)
+grid.new_snake(5, 'drone', (0, 0, 0, 0), 8)
+grid.new_snake(6, 'drone', (0, 0, 0, 0), 8)
 
 
 #counter = 0
