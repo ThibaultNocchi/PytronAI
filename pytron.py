@@ -1,13 +1,15 @@
 # Source code released under gpl v3 licence, see COPYING file
 
 from pyglet import window, clock, image
-from pyglet.gl import * #pylint: disable=unused-wildcard-import
+from pyglet.gl import *  # pylint: disable=unused-wildcard-import
 from pyglet.window import key
 from random import choice, randint
 from pyglet import font
 from pyglet.font import Text
 
 # Grid
+
+
 class Grid:
 
     def __init__(self, width: int, height: int):
@@ -15,7 +17,7 @@ class Grid:
         self.height = height
         self.data = [[(0, 0)]*self.width for i in range(self.height)]
         self.bonus = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
 
     def get_point(self, x: int, y: int) -> tuple:
         """
@@ -23,7 +25,7 @@ class Grid:
             :param self: 
             :param x:int: X coord.
             :param y:int: Y coord.
-        """   
+        """
         return self.data[y][x]
 
     def set_point(self, x: int, y: int, value: tuple):
@@ -33,7 +35,7 @@ class Grid:
             :param x:int: X coord.
             :param y:int: Y coord.
             :param value:tuple: Value to set.
-        """   
+        """
         self.data[y][x] = value
 
     def reset_point(self, x: int, y: int):
@@ -42,7 +44,7 @@ class Grid:
             :param self: 
             :param x:int: X coord.
             :param y:int: Y coord.
-        """   
+        """
         self.data[y][x] = (0, 0)
 
     def random_point(self):
@@ -64,11 +66,12 @@ class Grid:
         """
         Adds (or not) a bonus on the grid.
             :param self: 
-        """   
+        """
         b = choice(self.bonus)
         if b != 0:
             bx, by = self.random_point()
             self.set_point(bx, by, (b, 0))
+
 
 class Snake:
     def __init__(self, snakeId: int, snakeType: str, keys: tuple, color: int, coord: tuple):
@@ -107,10 +110,27 @@ class Snake:
         self.dead = 0
         self.kill = 0
 
+        self.cpu_ai = [
+            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 3),
+            (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 0),
+            (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+             2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 1),
+            (3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+             3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 2)
+        ]
+
+        self.cpu_avoid = [
+            (1, 1, 1, 3),
+            (2, 2, 2, 0),
+            (3, 3, 3, 1),
+            (0, 0, 0, 2)
+        ]
+
     def select_direction(self, grid: Grid):
-        global cpu_ai, cpu_avoid
         if self.type == 'drone':
-            self.new_dir = choice(cpu_ai[self.dir])
+            self.new_dir = choice(self.cpu_ai[self.dir])
         elif self.type == 'cpu':
             avoid_length = choice((2, 4, 4, 8, 8, 8))
             avoid_x = self.x
@@ -137,13 +157,13 @@ class Snake:
             state, age = grid.get_point(avoid_x, avoid_y)
 
             if state == 0:
-                self.new_dir = choice(cpu_ai[self.dir])
+                self.new_dir = choice(self.cpu_ai[self.dir])
             elif state >= 1 and state <= 20:
-                self.new_dir = choice(cpu_avoid[self.dir])
+                self.new_dir = choice(self.cpu_avoid[self.dir])
             elif state >= 21 and state <= 40:
                 self.new_dir = self.dir
             elif state == 255:
-                self.new_dir = choice(cpu_avoid[self.dir])
+                self.new_dir = choice(self.cpu_avoid[self.dir])
 
     def move(self, grid):
         if self.dir == 0:
@@ -365,22 +385,6 @@ for x in [10, 11, 78 - 18, 79 - 18]:
 #  for x in range(90):
 #    grid.set_point(x,y,(255,0))
 
-cpu_ai = [
-    (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 3),
-    (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 0),
-    (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 1),
-    (3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 2)
-]
-cpu_avoid = [
-    (1, 1, 1, 3),
-    (2, 2, 2, 0),
-    (3, 3, 3, 1),
-    (0, 0, 0, 2)
-]
 colors = [
     (0, 0, 0),
     (0, 0, 1),
