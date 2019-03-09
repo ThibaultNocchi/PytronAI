@@ -7,14 +7,22 @@ from random import choice, randint
 from pyglet import font
 from pyglet.font import Text
 
-
 class Snake:
-    def __init__(self, id, type, keys, color, coord):
+    def __init__(self, snakeId: int, snakeType: str, keys: tuple, color: int, coord: tuple):
+        """
+        Initializes a snake.
+            :param self: 
+            :param snakeId:int: ID of the snake. Must be unique (I guess).
+            :param snakeType:str: Type of the snake. Either "drone", "human" or "cpu".
+            :param keys:tuple: Tuple of four Pyglet keys associated to the movements of the snake.
+            :param color:int: Index of a colour from the "colors" variable defined in the body of the code.
+            :param coord:tuple: Coordinates of the head in the grid.
+        """
         global grid
-        self.id = id
-        self.type = type
+        self.id = snakeId
+        self.type = snakeType
 
-        if type == 'drone':
+        if snakeType == 'drone':
             self.min_tail = 0
             self.max_tail = 0
             self.default_tail = 0
