@@ -15,7 +15,8 @@ class Grid:
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
-        self.data = [[(0, 0)]*self.width for i in range(self.height)] # 0,0 is bottom left.
+        # 0,0 is bottom left.
+        self.data = [[(0, 0)]*self.width for i in range(self.height)]
         self.bonus = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
 
@@ -101,7 +102,8 @@ class Snake:
         self.x, self.y = coord
         self.new_x = self.x
         self.new_y = self.y
-        self.dir = choice((0, 1, 2, 3)) # 0: Up // 1: Right // 2: Down // 3: Left
+        # 0: Up // 1: Right // 2: Down // 3: Left
+        self.dir = choice((0, 1, 2, 3))
         self.new_dir = self.dir
         self.score = 0
         self.reset = False
@@ -161,7 +163,8 @@ class Snake:
             if avoid_x < 0:
                 avoid_x += grid_width
 
-            state, age = grid.get_point(avoid_x, avoid_y) #pylint: disable=unused-variable
+            state, age = grid.get_point(
+                avoid_x, avoid_y)  # pylint: disable=unused-variable
 
             if state == 0:
                 self.new_dir = choice(self.cpu_ai[self.dir])
@@ -177,7 +180,7 @@ class Snake:
         Moves the snake into its new position and checks if it is outside the boundaries.
             :param self: 
             :param grid:Grid: Grid to reference against.
-        """   
+        """
         if self.dir == 0:
             if self.y < grid.height - 1:
                 self.new_y += 1
@@ -208,10 +211,11 @@ class Snake:
         global snakesArray
         if self.reset:
             pass
-        state, age = grid.get_point(self.x, self.y) #pylint: disable=unused-variable
-        if state == 0: # If empty
+        state, age = grid.get_point(
+            self.x, self.y)  # pylint: disable=unused-variable
+        if state == 0:  # If empty
             grid.set_point(self.x, self.y, (self.id, 0))
-        elif state >= 1 and state <= 20: # Player
+        elif state >= 1 and state <= 20:  # Snake
             if self.type == 'drone':
                 grid.set_point(self.x, self.y, (self.id, 0))
             else:
@@ -220,21 +224,21 @@ class Snake:
                 self.dead += 1
                 if state != self.id:
                     snakesArray[state-1].kill += 1
-        elif state >= 21 and state <= 40: # Bonus
+        elif state >= 21 and state <= 40:  # Bonus
             grid.set_point(self.x, self.y, (self.id, 0))
-            if state == 21: # Good bonus
+            if state == 21:  # Good bonus
                 if self.tail != self.max_tail:
                     self.score += 1
                     self.tail += 10
                     if self.tail > self.max_tail:
                         self.tail = self.max_tail
-            elif state == 22: # Mild bonus
+            elif state == 22:  # Mild bonus
                 if self.tail != self.min_tail:
                     self.score += 2
                     self.tail -= 5
                     if self.tail < self.min_tail:
                         self.tail = self.min_tail
-        elif state == 255: # Wall
+        elif state == 255:  # Wall
             self.reset = True
             self.tail = self.default_tail
             self.dead += 1
@@ -249,7 +253,7 @@ def draw_grid():
             state, age = grid.get_point(x, y)
             color_index = 0
             fade = 1
-            if state >= 1 and state <= 20:
+            if state >= 1 and state <= 20:  # Snake
                 snake = snakesArray[state - 1]
                 if snake.reset or age > snake.tail:
                     grid.reset_point(x, y)
@@ -259,21 +263,22 @@ def draw_grid():
                     fade -= 0.005 * age
                     if fade < 0.4:
                         fade = 0.4
-            elif state >= 21 and state <= 40:
+            elif state >= 21 and state <= 40:  # Bonus
                 if age > bonus_timeout:
                     grid.reset_point(x, y)
                 else:
                     grid.set_point(x, y, (state, age + 1))
-                    if state == 21:
+                    if state == 21:  # Good bonus
                         color_index = 11
-                    else:
+                    else:  # Mild bonus
                         color_index = 12
-            elif state == 255:
+            elif state == 255:  # Wall
                 color_index = 10
             if color_index > 0:
                 r, g, b = colors[color_index]
                 verts_color.extend([r*fade, g*fade, b*fade]*4)
                 verts_coord.extend(squares_verts[y][x])
+
     verts_coord_size = len(verts_coord)
     verts_color_size = len(verts_color)
     verts_coord_gl = (GLfloat * verts_coord_size)(*verts_coord)
