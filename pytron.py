@@ -8,15 +8,6 @@ from pyglet import font
 from pyglet.font import Text
 
 
-"""class Bonus:
-    def __init__(self, id, type, color, coord):
-        global grid
-        self.id = id
-        self.type = type
-        self.x, self.y = coord
-        self.color = color"""
-
-
 class Snake:
     def __init__(self, id, type, keys, color, coord):
         global grid
