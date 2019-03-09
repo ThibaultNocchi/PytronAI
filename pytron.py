@@ -163,8 +163,8 @@ class Snake:
             if avoid_x < 0:
                 avoid_x += grid_width
 
-            state, age = grid.get_point(
-                avoid_x, avoid_y)  # pylint: disable=unused-variable
+            state, age = grid.get_point( # pylint: disable=unused-variable
+                avoid_x, avoid_y)
 
             if state == 0:
                 self.new_dir = choice(self.cpu_ai[self.dir])
@@ -211,8 +211,8 @@ class Snake:
         global snakesArray
         if self.reset:
             pass
-        state, age = grid.get_point(
-            self.x, self.y)  # pylint: disable=unused-variable
+        state, age = grid.get_point( # pylint: disable=unused-variable
+            self.x, self.y)
         if state == 0:  # If empty
             grid.set_point(self.x, self.y, (self.id, 0))
         elif state >= 1 and state <= 20:  # Snake
