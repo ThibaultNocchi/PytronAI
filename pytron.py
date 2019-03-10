@@ -10,7 +10,7 @@ from pyglet.font import Text
 # Grid
 class Grid:
 
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, bonus_timeout: int = 74):
         self.width = width
         self.height = height
         # 0,0 is bottom left.
@@ -21,6 +21,7 @@ class Grid:
         # id = 255        : wall
         self.data = [[(0, 0)]*self.width for i in range(self.height)]
         self.snakes = []
+        self.bonus_timeout = bonus_timeout
         self.bonus = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
 
@@ -151,7 +152,7 @@ class Grid:
                 snake1.reset_tail()
                 snake1.dead += 1
         
-        global squares_verts, colors, bonus_timeout
+        global squares_verts, colors
 
         if draw_grid:
             verts_coord = []
@@ -178,7 +179,7 @@ class Grid:
                                 fade = 0.4
 
                 elif state >= 21 and state <= 40:  # Bonus
-                    if age > bonus_timeout:
+                    if age > self.bonus_timeout:
                         self.reset_point(x, y)
                     else:
                         self.set_point(x, y, (state, age + 1))
@@ -513,9 +514,6 @@ for y in [10, 11, 48 - 12, 49 - 12]:
 for x in [10, 11, 78 - 18, 79 - 18]:
     for y in range(22, 37 - 12):
         game.grid.new_wall((x,y), (x,y))
-
-#bonusArray = []
-bonus_timeout = 74
 
 game.grid.new_snake(1, 'human', (key.UP, key.RIGHT, key.DOWN, key.LEFT), 1)
 game.grid.new_snake(2, 'cpu', (key.W, key.D, key.S, key.A), 2)
