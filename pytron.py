@@ -98,7 +98,34 @@ class Grid:
 
             snake1.x = snake1.new_x
             snake1.y = snake1.new_y
-            snake1.check_collision(self)
+            # snake1.check_collision(self)
+
+            if snake1.reset:
+                pass
+
+            state, age = self.get_point(snake1.x, snake1.y)
+
+            if state == 0: # If new cell is empty, the grid can easily be updated.
+                self.set_point(snake1.x, snake1.y, (snake1.id, 0))
+
+            elif state >= 1 and state <= 20: # If new cell is already occupied by another snake.
+                if snake1.type == "drone":
+                    self.set_point(snake1.x, snake1.y, (snake1.id, 0))
+                else:
+                    snake1.reset = True
+                    snake1.reset_tail()
+                    snake1.dead += 1
+                    if state != snake1.id: # If the snake's tail wasn't ours
+                        self.snakes[state-1].kill += 1
+            
+            elif state >= 21 and state <= 40: # Bonus
+                self.set_point(snake1.x, snake1.y, (snake1.id, 0))
+                snake1.edit_tail(state, True)
+
+            elif state == 255: # Wall
+                snake1.reset = True
+                snake1.reset_tail()
+                snake1.dead += 1
         
 
 
@@ -127,7 +154,7 @@ class Snake:
             self.max_tail = 299
             self.default_tail = 29
 
-        self.tail = self.default_tail
+        self.reset_tail()
         self.x, self.y = coord
         self.new_x = self.x
         self.new_y = self.y
@@ -158,6 +185,35 @@ class Snake:
             (3, 3, 3, 1),
             (0, 0, 0, 2)
         ]
+
+    def reset_tail(self):
+        """
+        Resets values of snake, such as its tail's length.
+            :param self: 
+        """   
+        self.tail = self.default_tail
+
+    def edit_tail(self, bonusType: int, editScore: bool):
+        """
+        Edits the length of the tail based on the bonus eaten.
+            :param self: 
+            :param bonusType:int: Bonus type. May be 21 or 22.
+            :param editScore:bool: Whether to edit the snake's score according to the bonus.
+        """   
+        if bonusType == 21:
+            if editScore:
+                self.score += 1
+            if self.tail != self.max_tail:
+                self.tail += 10
+                if self.tail > self.max_tail:
+                    self.tail = self.max_tail
+        elif bonusType == 22:
+            if editScore:
+                self.score += 2
+            if self.tail != self.min_tail:
+                self.tail -= 5
+                if self.tail < self.min_tail:
+                    self.tail = self.min_tail
 
     def select_new_direction(self, grid: Grid):
         """
@@ -230,46 +286,6 @@ class Snake:
                 self.new_x -= 1
             else:
                 self.new_x = grid.width - 1
-
-    def check_collision(self, grid: Grid):
-        """
-        Checks if the snake if collisionning into something.
-            :param self: 
-            :param grid:Grid: Grid to reference against.
-        """
-        if self.reset:
-            pass
-        state, age = grid.get_point( # pylint: disable=unused-variable
-            self.x, self.y)
-        if state == 0:  # If empty
-            grid.set_point(self.x, self.y, (self.id, 0))
-        elif state >= 1 and state <= 20:  # Snake
-            if self.type == 'drone':
-                grid.set_point(self.x, self.y, (self.id, 0))
-            else:
-                self.reset = True
-                self.tail = self.default_tail
-                self.dead += 1
-                if state != self.id:
-                    grid.snakes[state-1].kill += 1
-        elif state >= 21 and state <= 40:  # Bonus
-            grid.set_point(self.x, self.y, (self.id, 0))
-            if state == 21:  # Good bonus
-                if self.tail != self.max_tail:
-                    self.score += 1
-                    self.tail += 10
-                    if self.tail > self.max_tail:
-                        self.tail = self.max_tail
-            elif state == 22:  # Mild bonus
-                if self.tail != self.min_tail:
-                    self.score += 2
-                    self.tail -= 5
-                    if self.tail < self.min_tail:
-                        self.tail = self.min_tail
-        elif state == 255:  # Wall
-            self.reset = True
-            self.tail = self.default_tail
-            self.dead += 1
 
 
 def draw_grid():
