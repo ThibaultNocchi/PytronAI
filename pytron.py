@@ -47,7 +47,10 @@ class Grid:
         """   
         for x in range(bottom_left[0], top_right[0] + 1):
             for y in range(bottom_left[1], top_right[1] + 1):
-                self.data[y][x] = (255, 0)
+                try:
+                    self.data[y][x] = (255, 0)
+                except IndexError:
+                    pass
 
     def get_point(self, x: int, y: int) -> tuple:
         """
