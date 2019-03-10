@@ -102,7 +102,7 @@ class Grid:
             bx, by = self.random_point()
             self.set_point(bx, by, (b, 0))
 
-    def update_grid(self, draw_grid : bool = True):
+    def update_grid(self, draw_grid : bool = False, colors : list = [], squares_verts : list = []):
         
         for i in range(len(self.snakes)):
 
@@ -151,8 +151,6 @@ class Grid:
                 snake1.reset = True
                 snake1.reset_tail()
                 snake1.dead += 1
-        
-        global squares_verts, colors
 
         if draw_grid:
             verts_coord = []
@@ -390,10 +388,53 @@ class Game:
         self.fps = fps_limit
 
         self.win = window.Window(width = self.screen_width, height = self.screen_height, visible=False)
+        self.colors = []
+        self.squares_verts = []
         if draw:
             self.header_img = image.load("header.png").texture
             clock.set_fps_limit(self.fps)
             self.font = font.load("Arial", 12, bold = True, italic = False)
+            self.arena_verts = [
+                (self.arena_border-1, self.arena_border-2),
+                (self.arena_border+self.arena_width+1, self.arena_border-2),
+                (self.arena_border+self.arena_width+1, self.arena_border+self.arena_height),
+                (self.arena_border-1, self.arena_border+self.arena_height),
+                (self.arena_border-1, self.arena_border-2)
+            ]
+            self.points_coord = [
+                (150, 530),
+                (150, 510),
+                (420, 530),
+                (420, 510)
+            ]
+            self.colors = [
+                (0, 0, 0),
+                (0, 0, 1),
+                (1, 1, 0),
+                (1, 0, 1),
+                (0, 1, 1),
+                (0.5, 0.5, 0),
+                (0.5, 0, 0.5),
+                (0, 0.5, 0.5),
+                (1, 1, 1),
+                (1, 1, 1),
+                (1, 1, 1),
+                (0, 1, 0),
+                (1, 0, 0)
+            ]
+            self.square_verts = [
+                (0, 0),
+                (self.square_size-1, 0),
+                (self.square_size-1, self.square_size-1),
+                (0, self.square_size-1)
+            ]
+            for y in range(self.grid_height):
+                self.squares_verts.append([])
+                for x in range(self.grid_width):
+                    self.squares_verts[y].append([])
+                    for vx, vy in self.square_verts:
+                        self.squares_verts[y][x].append(vx + self.arena_border + (x * self.square_size))
+                        self.squares_verts[y][x].append(vy + self.arena_border + (y * self.square_size))
 
         self.grid = Grid(self.grid_width, self.grid_height)
 
@@ -402,23 +443,21 @@ class Game:
         self.header_img.blit(self.arena_border, self.arena_border + self.arena_border + self.arena_height)
 
     def draw_points(self):
-        global points_coord
         for snake in self.grid.snakes:
             if snake.type != 'drone':
                 text = "KILL %-3d, DEATH %-3d, BONUS %-3d" % (
                     snake.kill, snake.dead, snake.score)
-                x, y = points_coord[snake.id - 1]
-                r, g, b = colors[snake.color]
+                x, y = self.points_coord[snake.id - 1]
+                r, g, b = self.colors[snake.color]
                 txt = Text(self.font, text, x, y, color=(r, g, b, 1))
                 txt.draw()
 
     def draw_arena(self):
-        global arena_verts
         glBegin(GL_LINES)
         glColor3f(0.5, 0.5, 0.5)
         for i in range(4):
-            glVertex2f(*arena_verts[i])
-            glVertex2f(*arena_verts[i + 1])
+            glVertex2f(*(self.arena_verts[i]))
+            glVertex2f(*(self.arena_verts[i + 1]))
         glEnd()
 
     def run(self):
@@ -440,18 +479,18 @@ class Game:
             self.draw_header()
             self.draw_arena()
 
-            self.run_once()
+            self.run_once(True)
 
             self.draw_points()
             self.win.flip()
 
     def run_headless(self):
         while not self.win.has_exit:
-            self.run_once()
+            self.run_once(False)
 
-    def run_once(self):
+    def run_once(self, display: bool):
         self.grid.show_bonus()
-        self.grid.update_grid()
+        self.grid.update_grid(display, self.colors, self.squares_verts)
 
 
 game = Game(740, 550, 720, 480, 10, 10, True, 12)
@@ -469,53 +508,6 @@ def on_key_press(symbol, modifiers):
                 snake.new_dir = 2
             elif symbol == snake.left and snake.dir != 1:
                 snake.new_dir = 3
-
-
-arena_verts = [
-    (game.arena_border-1, game.arena_border-2),
-    (game.arena_border+game.arena_width+1, game.arena_border-2),
-    (game.arena_border+game.arena_width+1, game.arena_border+game.arena_height),
-    (game.arena_border-1, game.arena_border+game.arena_height),
-    (game.arena_border-1, game.arena_border-2)
-]
-square_verts = [
-    (0, 0),
-    (game.square_size-1, 0),
-    (game.square_size-1, game.square_size-1),
-    (0, game.square_size-1)
-]
-
-points_coord = [
-    (150, 530),
-    (150, 510),
-    (420, 530),
-    (420, 510)
-]
-
-squares_verts = []
-for y in range(game.grid_height):
-    squares_verts.append([])
-    for x in range(game.grid_width):
-        squares_verts[y].append([])
-        for vx, vy in square_verts:
-            squares_verts[y][x].append(vx + game.arena_border + (x * game.square_size))
-            squares_verts[y][x].append(vy + game.arena_border + (y * game.square_size))
-
-colors = [
-    (0, 0, 0),
-    (0, 0, 1),
-    (1, 1, 0),
-    (1, 0, 1),
-    (0, 1, 1),
-    (0.5, 0.5, 0),
-    (0.5, 0, 0.5),
-    (0, 0.5, 0.5),
-    (1, 1, 1),
-    (1, 1, 1),
-    (1, 1, 1),
-    (0, 1, 0),
-    (1, 0, 0)
-]
 
 # set wall
 for y in [10, 11, 48 - 12, 49 - 12]:
