@@ -20,6 +20,14 @@ class Grid:
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
 
     def new_snake(self, snakeId: int, snakeType: str, keys: tuple, color: int):
+        """
+        Adds a new snake at a random position to the grid.
+            :param self: 
+            :param snakeId:int: ID of the snake.
+            :param snakeType:str: Type of the snake.
+            :param keys:tuple: Keys to move the snake.
+            :param color:int: Color of the snake, as per the "colors" variable.
+        """   
         newSnake = Snake(snakeId, snakeType, keys, color, self.random_point())
         self.snakes.append(newSnake)
         self.set_point(newSnake.x, newSnake.y, (newSnake.id, 0))
@@ -77,7 +85,7 @@ class Grid:
             bx, by = self.random_point()
             self.set_point(bx, by, (b, 0))
 
-    def update_grid(self):
+    def update_grid(self, draw_grid : bool = True):
         
         for i in range(len(self.snakes)):
 
@@ -127,8 +135,65 @@ class Grid:
                 snake1.reset_tail()
                 snake1.dead += 1
         
+        global squares_verts, colors, bonus_timeout
 
+        if draw_grid:
+            verts_coord = []
+            verts_color = []
 
+        for y in range(self.height):
+            for x in range(self.width):
+                state, age = self.get_point(x, y)
+
+                if draw_grid:
+                    color_index = 0
+                    fade = 1
+
+                if state >= 1 and state <= 20:  # Snake
+                    snake = self.snakes[state - 1]
+                    if snake.reset or age > snake.tail:
+                        self.reset_point(x, y)
+                    else:
+                        self.set_point(x, y, (state, age + 1))
+                        if draw_grid:
+                            color_index = snake.color
+                            fade -= 0.005 * age
+                            if fade < 0.4:
+                                fade = 0.4
+
+                elif state >= 21 and state <= 40:  # Bonus
+                    if age > bonus_timeout:
+                        self.reset_point(x, y)
+                    else:
+                        self.set_point(x, y, (state, age + 1))
+                        if draw_grid:
+                            if state == 21:  # Good bonus
+                                color_index = 11
+                            else:  # Mild bonus
+                                color_index = 12
+
+                elif state == 255:  # Wall
+                    if draw_grid:
+                        color_index = 10
+
+                if draw_grid:
+                    if color_index > 0:
+                        r, g, b = colors[color_index]
+                        verts_color.extend([r*fade, g*fade, b*fade]*4)
+                        verts_coord.extend(squares_verts[y][x])
+
+        if draw_grid:
+            verts_coord_size = len(verts_coord)
+            verts_color_size = len(verts_color)
+            verts_coord_gl = (GLfloat * verts_coord_size)(*verts_coord)
+            verts_color_gl = (GLfloat * verts_color_size)(*verts_color)
+            glEnableClientState(GL_VERTEX_ARRAY)
+            glEnableClientState(GL_COLOR_ARRAY)
+            glColorPointer(3, GL_FLOAT, 0, verts_color_gl)
+            glVertexPointer(2, GL_FLOAT, 0, verts_coord_gl)
+            glDrawArrays(GL_QUADS, 0, verts_coord_size // 2)
+            glDisableClientState(GL_VERTEX_ARRAY)
+            glDisableClientState(GL_COLOR_ARRAY)
 
 class Snake:
     def __init__(self, snakeId: int, snakeType: str, keys: tuple, color: int, coord: tuple):
@@ -495,7 +560,6 @@ while not win.has_exit:
     grid.update_grid()
 #  else:
 #    counter += 1
-    draw_grid()
     draw_points()
     win.flip()
 
