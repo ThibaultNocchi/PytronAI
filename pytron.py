@@ -79,11 +79,26 @@ class Grid:
 
     def update_grid(self):
         
-        for snake in self.snakes:
-            snake.select_new_direction(grid)
-            snake.dir = snake.new_dir
-        for snake in self.snakes:
-            snake.move(grid)
+        for i in range(len(self.snakes)):
+
+            # Choosing new direction for CPUs, and moving snakes into their new position.
+            snake1 = self.snakes[i]
+            snake1.reset = False
+            snake1.select_new_direction(grid)
+            snake1.dir = snake1.new_dir
+            snake1.move(grid)
+
+            # Checking for head to head collision with previously moved snakes.
+            for j in range(i):
+                snake2 = self.snakes[j]
+                if snake1.id != snake2.id:
+                    if snake1.new_x == snake2.new_x and snake1.new_y == snake2.new_y:
+                        snake1.reset = True
+                        snake2.reset = True
+
+            snake1.x = snake1.new_x
+            snake1.y = snake1.new_y
+            snake1.check_collision(self)
         
 
 
@@ -461,26 +476,7 @@ while not win.has_exit:
 #  if counter == 3:
 #    counter = 0
     grid.show_bonus()
-
-    for snake in grid.snakes:
-        snake.reset = False
-    for snake in grid.snakes:
-        snake.select_new_direction(grid)
-        snake.dir = snake.new_dir
-    for snake in grid.snakes:
-        snake.move(grid)
-    # check draw
-    for i in range(len(grid.snakes)):
-        for j in range(i+1, len(grid.snakes)):
-            if grid.snakes[i].id != grid.snakes[j].id:
-                if grid.snakes[i].new_x == grid.snakes[j].new_x and grid.snakes[i].new_y == grid.snakes[j].new_y:
-                    grid.snakes[i].reset = True
-                    grid.snakes[j].reset = True
-
-    for snake in grid.snakes:
-        snake.x = snake.new_x
-        snake.y = snake.new_y
-        snake.check_collision(grid)
+    grid.update_grid()
 #  else:
 #    counter += 1
     draw_grid()
