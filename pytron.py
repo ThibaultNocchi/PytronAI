@@ -384,6 +384,8 @@ class Game:
         if self.grid_width < 1 or self.grid_height < 1:
             raise ValueError("Square size too big or arena size too small.")
 
+        self.iteration = 0
+
         self.draw = draw
         self.fps = fps_limit
 
@@ -491,6 +493,9 @@ class Game:
     def run_once(self, display: bool):
         self.grid.show_bonus()
         self.grid.update_grid(display, self.colors, self.squares_verts)
+        self.iteration += 1
+        if self.iteration % 1024 == 0:
+                print(self.iteration)
 
 
 game = Game(740, 550, 720, 480, 10, 10, True, 12)
