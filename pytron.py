@@ -25,7 +25,7 @@ class Grid:
         self.bonus = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 21)
 
-    def new_snake(self, snakeId: int, snakeType: str, keys: tuple, color: int):
+    def new_snake(self, snakeType: str, keys: tuple, color: int):
         """
         Adds a new snake at a random position to the grid.
             :param self: 
@@ -34,7 +34,7 @@ class Grid:
             :param keys:tuple: Keys to move the snake.
             :param color:int: Color of the snake, as per the "colors" variable.
         """   
-        newSnake = Snake(snakeId, snakeType, keys, color, self.random_point())
+        newSnake = Snake(len(self.snakes) + 1, snakeType, keys, color, self.random_point())
         self.snakes.append(newSnake)
         self.set_point(newSnake.x, newSnake.y, (newSnake.id, 0))
 
@@ -105,7 +105,7 @@ class Grid:
             bx, by = self.random_point()
             self.set_point(bx, by, (b, 0))
 
-    def update_grid(self, draw_grid : bool = False, colors : list = [], squares_verts : list = []):
+    def update_grid(self, single_life: bool, draw_grid : bool = False, colors : list = [], squares_verts : list = []):
         
         for i in range(len(self.snakes)):
 
@@ -371,7 +371,9 @@ class Snake:
 
 class Game:
 
-    def __init__(self, arena_width: int, arena_height: int, arena_border: int, square_size: int, draw: bool, fps_limit: int = 12):
+    def __init__(self, arena_width: int, arena_height: int, arena_border: int, square_size: int, draw: bool, fps_limit: int = 12, single_life: bool = False):
+        
+        self.single_life = single_life
         
         self.screen_width = arena_width + 2*arena_border
         self.screen_height = arena_height + 70
@@ -494,7 +496,7 @@ class Game:
 
     def run_once(self, display: bool):
         self.grid.show_bonus()
-        self.grid.update_grid(display, self.colors, self.squares_verts)
+        self.grid.update_grid(self.single_life, display, self.colors, self.squares_verts)
         self.iteration += 1
         if self.iteration % 1024 == 0:
                 print(self.iteration)
@@ -524,11 +526,11 @@ for x in [10, 11, 78 - 18, 79 - 18]:
     for y in range(22, 37 - 12):
         game.grid.new_wall((x,y), (x,y))
 
-game.grid.new_snake(1, 'human', (key.UP, key.RIGHT, key.DOWN, key.LEFT), 1)
-game.grid.new_snake(2, 'cpu', (key.W, key.D, key.S, key.A), 2)
-game.grid.new_snake(3, 'cpu', (key.R, key.G, key.F, key.D), 3)
-game.grid.new_snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4)
-game.grid.new_snake(5, 'drone', (0, 0, 0, 0), 8)
-game.grid.new_snake(6, 'drone', (0, 0, 0, 0), 8)
+game.grid.new_snake('human', (key.UP, key.RIGHT, key.DOWN, key.LEFT), 1)
+game.grid.new_snake('cpu', (key.W, key.D, key.S, key.A), 2)
+game.grid.new_snake('cpu', (key.R, key.G, key.F, key.D), 3)
+game.grid.new_snake('cpu', (key.U, key.K, key.J, key.H), 4)
+game.grid.new_snake('drone', (0, 0, 0, 0), 8)
+game.grid.new_snake('drone', (0, 0, 0, 0), 8)
 
 game.run()
