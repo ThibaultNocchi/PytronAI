@@ -389,8 +389,8 @@ class Game:
         self.draw = draw
         self.fps = fps_limit
 
+        self.win = window.Window(width = self.screen_width, height = self.screen_height, visible=False)
         if draw:
-            self.win = window.Window(width = self.screen_width, height = self.screen_height)
             self.header_img = image.load("header.png").texture
             clock.set_fps_limit(self.fps)
             self.font = font.load("Arial", 12, bold = True, italic = False)
@@ -424,11 +424,14 @@ class Game:
     def run(self):
         if self.draw:
             self.run_window()
+        else:
+            self.run_headless()
 
     def run_window(self):
+        self.win.set_visible()
         while not self.win.has_exit:
             self.win.dispatch_events()
-            dt = clock.tick()
+            clock.tick()
             self.win.set_caption('Pytron v0.5 (fps: %s)' % (round(clock.get_fps())))
 
             glClear(GL_COLOR_BUFFER_BIT)
@@ -437,11 +440,18 @@ class Game:
             self.draw_header()
             self.draw_arena()
 
-            self.grid.show_bonus()
-            self.grid.update_grid()
+            self.run_once()
 
             self.draw_points()
             self.win.flip()
+
+    def run_headless(self):
+        while not self.win.has_exit:
+            self.run_once()
+
+    def run_once(self):
+        self.grid.show_bonus()
+        self.grid.update_grid()
 
 
 game = Game(740, 550, 720, 480, 10, 10, True, 12)
