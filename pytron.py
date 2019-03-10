@@ -32,6 +32,17 @@ class Grid:
         self.snakes.append(newSnake)
         self.set_point(newSnake.x, newSnake.y, (newSnake.id, 0))
 
+    def new_wall(self, bottom_left: tuple, top_right: tuple):
+        """
+        Adds a new wall to the grid.
+            :param self: 
+            :param bottom_left:tuple: X and Y position of the bottom left.
+            :param top_right:tuple: X and Y position of the top right.
+        """   
+        for x in range(bottom_left[0], top_right[0] + 1):
+            for y in range(bottom_left[1], top_right[1] + 1):
+                self.data[y][x] = (255, 0)
+
     def get_point(self, x: int, y: int) -> tuple:
         """
         Get the value associated to a coordinate into the grid.
@@ -381,6 +392,20 @@ def draw_points():
             txt.draw()
 
 
+class Game:
+
+    def __init__(self, screen_width: int, screen_height: int, arena_width: int, arena_height: int, arena_border: int, square_size: int):
+        
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.arena_width = arena_width
+        self.arena_height = arena_height
+        self.arena_border = arena_border
+        self.square_size = square_size
+
+        self.grid_width = int(self.arena_width/self.square_size)
+        self.grid_height = int(self.arena_height/self.square_size)
+
 screen_width = 740
 screen_height = 550
 
@@ -455,13 +480,6 @@ for y in range(grid_height):
 # id = 255        : wall
 grid = Grid(grid_width, grid_height)
 
-# set wall
-for y in [10, 11, 48 - 12, 49 - 12]:
-    for x in range(22, 67 - 18):
-        grid.set_point(x, y, (255, 0))
-for x in [10, 11, 78 - 18, 79 - 18]:
-    for y in range(22, 37 - 12):
-        grid.set_point(x, y, (255, 0))
 # for y in range(10):
 #  for x in range(90):
 #    grid.set_point(x,y,(255,0))
@@ -482,6 +500,14 @@ colors = [
     (1, 0, 0)
 ]
 
+# set wall
+for y in [10, 11, 48 - 12, 49 - 12]:
+    for x in range(22, 67 - 18):
+        grid.new_wall((x,y), (x,y))
+for x in [10, 11, 78 - 18, 79 - 18]:
+    for y in range(22, 37 - 12):
+        grid.new_wall((x,y), (x,y))
+
 #bonusArray = []
 bonus_timeout = 74
 
@@ -491,7 +517,6 @@ grid.new_snake(3, 'cpu', (key.R, key.G, key.F, key.D), 3)
 grid.new_snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4)
 grid.new_snake(5, 'drone', (0, 0, 0, 0), 8)
 grid.new_snake(6, 'drone', (0, 0, 0, 0), 8)
-
 
 #counter = 0
 while not win.has_exit:
