@@ -14,6 +14,11 @@ class Grid:
         self.width = width
         self.height = height
         # 0,0 is bottom left.
+        #(id, age)
+        # id = 0          : empty
+        # id >= 1 e <=20  : snake (human, cpu, drone)
+        # id >=21 e <=40  : bonus
+        # id = 255        : wall
         self.data = [[(0, 0)]*self.width for i in range(self.height)]
         self.snakes = []
         self.bonus = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -103,9 +108,9 @@ class Grid:
             # Choosing new direction for CPUs, and moving snakes into their new position.
             snake1 = self.snakes[i]
             snake1.reset = False
-            snake1.select_new_direction(grid)
+            snake1.select_new_direction(self)
             snake1.dir = snake1.new_dir
-            snake1.move(grid)
+            snake1.move(self)
 
             # Checking for head to head collision with previously moved snakes.
             for j in range(i):
@@ -217,7 +222,6 @@ class Snake:
             :param color:int: Index of a colour from the "colors" variable defined in the body of the code.
             :param coord:tuple: Coordinates of the head in the grid.
         """
-        global grid
         self.id = snakeId
         self.type = snakeType
 
@@ -315,14 +319,14 @@ class Snake:
             elif self.dir == 3:
                 avoid_x -= avoid_detection
 
-            if avoid_y > grid_height - 1:
-                avoid_y -= grid_height
-            if avoid_x > grid_width - 1:
-                avoid_x -= grid_width
+            if avoid_y > grid.height - 1:
+                avoid_y -= grid.height
+            if avoid_x > grid.width - 1:
+                avoid_x -= grid.width
             if avoid_y < 0:
-                avoid_y += grid_height
+                avoid_y += grid.height
             if avoid_x < 0:
-                avoid_x += grid_width
+                avoid_x += grid.width
 
             state, age = grid.get_point( # pylint: disable=unused-variable
                 avoid_x, avoid_y)
@@ -374,27 +378,9 @@ def draw_arena():
     glEnd()
 
 
-def draw_header():
-    global arena_border, arena_height
-    glColor3f(1, 1, 1)
-    header_img.blit(arena_border, arena_border + arena_border + arena_height)
-
-
-def draw_points():
-    global font, points_coord
-    for snake in grid.snakes:
-        if snake.type != 'drone':
-            text = "KILL %-3d, DEATH %-3d, BONUS %-3d" % (
-                snake.kill, snake.dead, snake.score)
-            x, y = points_coord[snake.id - 1]
-            r, g, b = colors[snake.color]
-            txt = Text(font, text, x, y, color=(r, g, b, 1))
-            txt.draw()
-
-
 class Game:
 
-    def __init__(self, screen_width: int, screen_height: int, arena_width: int, arena_height: int, arena_border: int, square_size: int):
+    def __init__(self, screen_width: int, screen_height: int, arena_width: int, arena_height: int, arena_border: int, square_size: int, draw: bool, fps_limit: int = 12):
         
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -406,7 +392,36 @@ class Game:
         self.grid_width = int(self.arena_width/self.square_size)
         self.grid_height = int(self.arena_height/self.square_size)
 
-screen_width = 740
+        if self.grid_width < 1 or self.grid_height < 1:
+            raise ValueError("Square size too big or arena size too small.")
+
+        self.draw = draw
+        self.fps = fps_limit
+
+        if draw:
+            self.win = window.Window(width = self.screen_width, height = self.screen_height)
+            self.header_img = image.load("header.png").texture
+            clock.set_fps_limit(self.fps)
+            self.font = font.load("Arial", 12, bold = True, italic = False)
+
+        self.grid = Grid(self.grid_width, self.grid_height)
+
+    def draw_header(self):
+        glColor3f(1, 1, 1)
+        self.header_img.blit(self.arena_border, self.arena_border + self.arena_border + self.arena_height)
+
+    def draw_points(self):
+        global points_coord
+        for snake in self.grid.snakes:
+            if snake.type != 'drone':
+                text = "KILL %-3d, DEATH %-3d, BONUS %-3d" % (
+                    snake.kill, snake.dead, snake.score)
+                x, y = points_coord[snake.id - 1]
+                r, g, b = colors[snake.color]
+                txt = Text(self.font, text, x, y, color=(r, g, b, 1))
+                txt.draw()
+
+"""screen_width = 740
 screen_height = 550
 
 arena_width = 720
@@ -425,12 +440,14 @@ header_img = image.load('header.png').texture
 fps_limit = 12
 clock.set_fps_limit(fps_limit)
 #keyboard = key.KeyStateHandler()
-font = font.load('Arial', 12, bold=True, italic=False)
+font = font.load('Arial', 12, bold=True, italic=False)"""
+
+game = Game(740, 550, 720, 480, 10, 10, True, 12)
 
 
-@win.event
+@game.win.event
 def on_key_press(symbol, modifiers):
-    for snake in grid.snakes:
+    for snake in game.grid.snakes:
         if snake.type == 'human':
             if symbol == snake.up and snake.dir != 2:
                 snake.new_dir = 0
@@ -444,17 +461,17 @@ def on_key_press(symbol, modifiers):
 
 
 arena_verts = [
-    (arena_border-1, arena_border-2),
-    (arena_border+arena_width+1, arena_border-2),
-    (arena_border+arena_width+1, arena_border+arena_height),
-    (arena_border-1, arena_border+arena_height),
-    (arena_border-1, arena_border-2)
+    (game.arena_border-1, game.arena_border-2),
+    (game.arena_border+game.arena_width+1, game.arena_border-2),
+    (game.arena_border+game.arena_width+1, game.arena_border+game.arena_height),
+    (game.arena_border-1, game.arena_border+game.arena_height),
+    (game.arena_border-1, game.arena_border-2)
 ]
 square_verts = [
     (0, 0),
-    (square_size-1, 0),
-    (square_size-1, square_size-1),
-    (0, square_size-1)
+    (game.square_size-1, 0),
+    (game.square_size-1, game.square_size-1),
+    (0, game.square_size-1)
 ]
 
 points_coord = [
@@ -465,20 +482,15 @@ points_coord = [
 ]
 
 squares_verts = []
-for y in range(grid_height):
+for y in range(game.grid_height):
     squares_verts.append([])
-    for x in range(grid_width):
+    for x in range(game.grid_width):
         squares_verts[y].append([])
         for vx, vy in square_verts:
-            squares_verts[y][x].append(vx + arena_border + (x * square_size))
-            squares_verts[y][x].append(vy + arena_border + (y * square_size))
+            squares_verts[y][x].append(vx + game.arena_border + (x * game.square_size))
+            squares_verts[y][x].append(vy + game.arena_border + (y * game.square_size))
 
-#(id, age)
-# id = 0          : empty
-# id >= 1 e <=20  : snake (human, cpu, drone)
-# id >=21 e <=40  : bonus
-# id = 255        : wall
-grid = Grid(grid_width, grid_height)
+# grid = Grid(grid_width, grid_height)
 
 # for y in range(10):
 #  for x in range(90):
@@ -503,42 +515,42 @@ colors = [
 # set wall
 for y in [10, 11, 48 - 12, 49 - 12]:
     for x in range(22, 67 - 18):
-        grid.new_wall((x,y), (x,y))
+        game.grid.new_wall((x,y), (x,y))
 for x in [10, 11, 78 - 18, 79 - 18]:
     for y in range(22, 37 - 12):
-        grid.new_wall((x,y), (x,y))
+        game.grid.new_wall((x,y), (x,y))
 
 #bonusArray = []
 bonus_timeout = 74
 
-grid.new_snake(1, 'human', (key.UP, key.RIGHT, key.DOWN, key.LEFT), 1)
-grid.new_snake(2, 'cpu', (key.W, key.D, key.S, key.A), 2)
-grid.new_snake(3, 'cpu', (key.R, key.G, key.F, key.D), 3)
-grid.new_snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4)
-grid.new_snake(5, 'drone', (0, 0, 0, 0), 8)
-grid.new_snake(6, 'drone', (0, 0, 0, 0), 8)
+game.grid.new_snake(1, 'human', (key.UP, key.RIGHT, key.DOWN, key.LEFT), 1)
+game.grid.new_snake(2, 'cpu', (key.W, key.D, key.S, key.A), 2)
+game.grid.new_snake(3, 'cpu', (key.R, key.G, key.F, key.D), 3)
+game.grid.new_snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4)
+game.grid.new_snake(5, 'drone', (0, 0, 0, 0), 8)
+game.grid.new_snake(6, 'drone', (0, 0, 0, 0), 8)
 
 #counter = 0
-while not win.has_exit:
-    win.dispatch_events()
+while not game.win.has_exit:
+    game.win.dispatch_events()
     dt = clock.tick()
     # print dt
-    win.set_caption('Pytron v0.5 (fps: %s)' % (round(clock.get_fps())))
+    game.win.set_caption('Pytron v0.5 (fps: %s)' % (round(clock.get_fps())))
 
     glClear(GL_COLOR_BUFFER_BIT)
     glLoadIdentity()
 
-    draw_header()
+    game.draw_header()
     draw_arena()
 
 #  if counter == 3:
 #    counter = 0
-    grid.show_bonus()
-    grid.update_grid()
+    game.grid.show_bonus()
+    game.grid.update_grid()
 #  else:
 #    counter += 1
-    draw_points()
-    win.flip()
+    game.draw_points()
+    game.win.flip()
 
 # print "Punteggio"
 # for snake in snakesArray:
