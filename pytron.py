@@ -123,7 +123,6 @@ class Grid:
 
             snake1.x = snake1.new_x
             snake1.y = snake1.new_y
-            # snake1.check_collision(self)
 
             if snake1.reset:
                 pass
@@ -369,10 +368,10 @@ class Snake:
 
 class Game:
 
-    def __init__(self, screen_width: int, screen_height: int, arena_width: int, arena_height: int, arena_border: int, square_size: int, draw: bool, fps_limit: int = 12):
+    def __init__(self, arena_width: int, arena_height: int, arena_border: int, square_size: int, draw: bool, fps_limit: int = 12):
         
-        self.screen_width = screen_width
-        self.screen_height = screen_height
+        self.screen_width = arena_width + 2*arena_border
+        self.screen_height = arena_height + 70
         self.arena_width = arena_width
         self.arena_height = arena_height
         self.arena_border = arena_border
@@ -404,10 +403,10 @@ class Game:
                 (self.arena_border-1, self.arena_border-2)
             ]
             self.points_coord = [
-                (150, 530),
-                (150, 510),
-                (420, 530),
-                (420, 510)
+                (150, self.screen_height - 20),
+                (150, self.screen_height - 40),
+                (420, self.screen_height - 20),
+                (420, self.screen_height - 40)
             ]
             self.colors = [
                 (0, 0, 0),
@@ -498,7 +497,7 @@ class Game:
                 print(self.iteration)
 
 
-game = Game(740, 550, 720, 480, 10, 10, True, 12)
+game = Game(720, 480, 10, 10, True, 12)
 
 
 @game.win.event
