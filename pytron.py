@@ -353,54 +353,6 @@ class Snake:
                 self.new_x = grid.width - 1
 
 
-def draw_grid():
-    global grid, squares_verts, colors, bonus_timeout
-    verts_coord = []
-    verts_color = []
-    for y in range(grid.height):
-        for x in range(grid.width):
-            state, age = grid.get_point(x, y)
-            color_index = 0
-            fade = 1
-            if state >= 1 and state <= 20:  # Snake
-                snake = grid.snakes[state - 1]
-                if snake.reset or age > snake.tail:
-                    grid.reset_point(x, y)
-                else:
-                    grid.set_point(x, y, (state, age + 1))
-                    color_index = snake.color
-                    fade -= 0.005 * age
-                    if fade < 0.4:
-                        fade = 0.4
-            elif state >= 21 and state <= 40:  # Bonus
-                if age > bonus_timeout:
-                    grid.reset_point(x, y)
-                else:
-                    grid.set_point(x, y, (state, age + 1))
-                    if state == 21:  # Good bonus
-                        color_index = 11
-                    else:  # Mild bonus
-                        color_index = 12
-            elif state == 255:  # Wall
-                color_index = 10
-            if color_index > 0:
-                r, g, b = colors[color_index]
-                verts_color.extend([r*fade, g*fade, b*fade]*4)
-                verts_coord.extend(squares_verts[y][x])
-
-    verts_coord_size = len(verts_coord)
-    verts_color_size = len(verts_color)
-    verts_coord_gl = (GLfloat * verts_coord_size)(*verts_coord)
-    verts_color_gl = (GLfloat * verts_color_size)(*verts_color)
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glEnableClientState(GL_COLOR_ARRAY)
-    glColorPointer(3, GL_FLOAT, 0, verts_color_gl)
-    glVertexPointer(2, GL_FLOAT, 0, verts_coord_gl)
-    glDrawArrays(GL_QUADS, 0, verts_coord_size // 2)
-    glDisableClientState(GL_VERTEX_ARRAY)
-    glDisableClientState(GL_COLOR_ARRAY)
-
-
 def draw_arena():
     global arena_verts
     glBegin(GL_LINES)
