@@ -368,16 +368,6 @@ class Snake:
                 self.new_x = grid.width - 1
 
 
-def draw_arena():
-    global arena_verts
-    glBegin(GL_LINES)
-    glColor3f(0.5, 0.5, 0.5)
-    for i in range(4):
-        glVertex2f(*arena_verts[i])
-        glVertex2f(*arena_verts[i + 1])
-    glEnd()
-
-
 class Game:
 
     def __init__(self, screen_width: int, screen_height: int, arena_width: int, arena_height: int, arena_border: int, square_size: int, draw: bool, fps_limit: int = 12):
@@ -421,26 +411,37 @@ class Game:
                 txt = Text(self.font, text, x, y, color=(r, g, b, 1))
                 txt.draw()
 
-"""screen_width = 740
-screen_height = 550
+    def draw_arena(self):
+        global arena_verts
+        glBegin(GL_LINES)
+        glColor3f(0.5, 0.5, 0.5)
+        for i in range(4):
+            glVertex2f(*arena_verts[i])
+            glVertex2f(*arena_verts[i + 1])
+        glEnd()
 
-arena_width = 720
-arena_height = 480
-arena_border = 10
+    def run(self):
+        if self.draw:
+            self.run_window()
 
-# 2,3,4,5,6,8,10,12,15,16,20,24,30,40
-square_size = 10
-grid_width = int(arena_width / square_size)
-grid_height = int(arena_height / square_size)
-# 8 = 90 x 60 = 5400 squares
-# 10 = 72 x 48 = 3456 squares
+    def run_window(self):
+        while not self.win.has_exit:
+            self.win.dispatch_events()
+            dt = clock.tick()
+            self.win.set_caption('Pytron v0.5 (fps: %s)' % (round(clock.get_fps())))
 
-win = window.Window(width=screen_width, height=screen_height)
-header_img = image.load('header.png').texture
-fps_limit = 12
-clock.set_fps_limit(fps_limit)
-#keyboard = key.KeyStateHandler()
-font = font.load('Arial', 12, bold=True, italic=False)"""
+            glClear(GL_COLOR_BUFFER_BIT)
+            glLoadIdentity()
+
+            self.draw_header()
+            self.draw_arena()
+
+            self.grid.show_bonus()
+            self.grid.update_grid()
+
+            self.draw_points()
+            self.win.flip()
+
 
 game = Game(740, 550, 720, 480, 10, 10, True, 12)
 
@@ -457,7 +458,6 @@ def on_key_press(symbol, modifiers):
                 snake.new_dir = 2
             elif symbol == snake.left and snake.dir != 1:
                 snake.new_dir = 3
-#win.on_key_press = on_key_press
 
 
 arena_verts = [
@@ -489,12 +489,6 @@ for y in range(game.grid_height):
         for vx, vy in square_verts:
             squares_verts[y][x].append(vx + game.arena_border + (x * game.square_size))
             squares_verts[y][x].append(vy + game.arena_border + (y * game.square_size))
-
-# grid = Grid(grid_width, grid_height)
-
-# for y in range(10):
-#  for x in range(90):
-#    grid.set_point(x,y,(255,0))
 
 colors = [
     (0, 0, 0),
@@ -530,28 +524,4 @@ game.grid.new_snake(4, 'cpu', (key.U, key.K, key.J, key.H), 4)
 game.grid.new_snake(5, 'drone', (0, 0, 0, 0), 8)
 game.grid.new_snake(6, 'drone', (0, 0, 0, 0), 8)
 
-#counter = 0
-while not game.win.has_exit:
-    game.win.dispatch_events()
-    dt = clock.tick()
-    # print dt
-    game.win.set_caption('Pytron v0.5 (fps: %s)' % (round(clock.get_fps())))
-
-    glClear(GL_COLOR_BUFFER_BIT)
-    glLoadIdentity()
-
-    game.draw_header()
-    draw_arena()
-
-#  if counter == 3:
-#    counter = 0
-    game.grid.show_bonus()
-    game.grid.update_grid()
-#  else:
-#    counter += 1
-    game.draw_points()
-    game.win.flip()
-
-# print "Punteggio"
-# for snake in snakesArray:
-#  print snake.id, ": points:", snake.points, ", dead: ", snake.dead, ", kill: ", snake.kill
+game.run()
