@@ -109,50 +109,68 @@ class Grid:
         
         for i in range(len(self.snakes)):
 
-            # Choosing new direction for CPUs, and moving snakes into their new position.
-            snake1 = self.snakes[i]
-            snake1.reset = False
-            snake1.select_new_direction(self)
-            snake1.dir = snake1.new_dir
-            snake1.move(self)
+            if not single_life or not self.snakes[i].reset or self.snakes[i].type == "drone":
 
-            # Checking for head to head collision with previously moved snakes.
-            for j in range(i):
-                snake2 = self.snakes[j]
-                if snake1.id != snake2.id:
-                    if snake1.new_x == snake2.new_x and snake1.new_y == snake2.new_y:
-                        snake1.reset = True
-                        snake2.reset = True
+                # Choosing new direction for CPUs, and moving snakes into their new position.
+                snake1 = self.snakes[i]
+                snake1.reset = False
+                snake1.select_new_direction(self)
+                snake1.dir = snake1.new_dir
+                snake1.move(self)
 
-            snake1.x = snake1.new_x
-            snake1.y = snake1.new_y
+                # Checking for head to head collision with previously moved snakes.
+                for j in range(i):
+                    snake2 = self.snakes[j]
+                    if snake1.id != snake2.id:
+                        if snake1.new_x == snake2.new_x and snake1.new_y == snake2.new_y:
+                            snake1.reset = True
+                            snake2.reset = True
+                            snake1.reset_tail()
+                            snake2.reset_tail()
+                            snake1.dead += 1
+                            snake2.dead += 1
+                            if single_life:
+                                if snake2.type != "drone":
+                                    snake2.remove_snake()
+                                if snake1.type != "drone":
+                                    snake1.remove_snake()
+                                    continue
 
-            if snake1.reset:
-                pass
+                if snake1.reset:
+                    pass
 
-            state, age = self.get_point(snake1.x, snake1.y)
+                snake1.x = snake1.new_x
+                snake1.y = snake1.new_y
 
-            if state == 0: # If new cell is empty, the grid can easily be updated.
-                self.set_point(snake1.x, snake1.y, (snake1.id, 0))
+                state, age = self.get_point(snake1.x, snake1.y)
 
-            elif state >= 1 and state <= 20: # If new cell is already occupied by another snake.
-                if snake1.type == "drone":
+                if state == 0: # If new cell is empty, the grid can easily be updated.
                     self.set_point(snake1.x, snake1.y, (snake1.id, 0))
-                else:
+
+                elif state >= 1 and state <= 20: # If new cell is already occupied by another snake.
+                    if snake1.type == "drone":
+                        self.set_point(snake1.x, snake1.y, (snake1.id, 0))
+                    else:
+                        snake1.reset = True
+                        snake1.reset_tail()
+                        snake1.dead += 1
+                        if state != snake1.id: # If the snake's tail wasn't ours
+                            self.snakes[state-1].kill += 1
+                        if single_life:
+                            snake1.remove_snake()
+                            continue
+                
+                elif state >= 21 and state <= 40: # Bonus
+                    self.set_point(snake1.x, snake1.y, (snake1.id, 0))
+                    snake1.edit_tail(state, True)
+
+                elif state == 255: # Wall
                     snake1.reset = True
                     snake1.reset_tail()
                     snake1.dead += 1
-                    if state != snake1.id: # If the snake's tail wasn't ours
-                        self.snakes[state-1].kill += 1
-            
-            elif state >= 21 and state <= 40: # Bonus
-                self.set_point(snake1.x, snake1.y, (snake1.id, 0))
-                snake1.edit_tail(state, True)
-
-            elif state == 255: # Wall
-                snake1.reset = True
-                snake1.reset_tail()
-                snake1.dead += 1
+                    if single_life:
+                        snake1.remove_snake()
+                        continue
 
         if draw_grid:
             verts_coord = []
@@ -266,6 +284,12 @@ class Snake:
             (3, 3, 3, 1),
             (0, 0, 0, 2)
         ]
+
+    def remove_snake(self):
+            self.tail = 0
+            self.x = -1
+            self.y = -1
+            self.reset = True
 
     def reset_tail(self):
         """
@@ -502,7 +526,7 @@ class Game:
                 print(self.iteration)
 
 
-game = Game(720, 480, 10, 10, True, 12)
+game = Game(720, 480, 10, 10, True, 12, False)
 
 
 @game.win.event
